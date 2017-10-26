@@ -1,0 +1,50 @@
+我们把ETCD集群部署在master节点上。
+三个master节点的IP如下
+10.157.27.41
+10.157.27.42
+10.157.27.43
+下面数字较多，非常容易写错，注意！
+docker run后,docker ps检查确认etcd容器running.
+
+
+10.157.27.41
+docker run -d --net=host --restart=always --name etcd quay.io/coreos/etcd \
+	/usr/local/bin/etcd \
+	--data-dir=data.etcd \
+	--name etcd1 \
+	--advertise-client-urls http://10.157.27.41:2379 \
+	--listen-client-urls http://10.157.27.41:2379 \
+	--initial-advertise-peer-urls http://10.157.27.41:2380 \
+	--listen-peer-urls http://10.157.27.41:2380 \
+	--initial-cluster-token etcd-cluster \
+	--initial-cluster \
+	"etcd1=http://10.157.27.41:2380,etcd2=http://10.157.27.42:2380,etcd3=http://10.157.27.43:2380" \
+	--initial-cluster-state new
+
+10.157.27.42
+docker run -d --net=host --restart=always --name etcd quay.io/coreos/etcd \
+	/usr/local/bin/etcd \
+	--data-dir=data.etcd \
+	--name etcd2 \
+	--advertise-client-urls http://10.157.27.42:2379 \
+	--listen-client-urls http://10.157.27.42:2379 \
+	--initial-advertise-peer-urls http://10.157.27.42:2380 \
+	--listen-peer-urls http://10.157.27.42:2380 \
+	--initial-cluster-token etcd-cluster \
+	--initial-cluster \
+	"etcd1=http://10.157.27.41:2380,etcd2=http://10.157.27.42:2380,etcd3=http://10.157.27.43:2380" \
+	--initial-cluster-state new
+
+10.157.27.43
+docker run -d --net=host --restart=always  --name etcd quay.io/coreos/etcd \
+	/usr/local/bin/etcd \
+	--data-dir=data.etcd \
+	--name etcd3 \
+	--advertise-client-urls http://10.157.27.43:2379 \
+	--listen-client-urls http://10.157.27.43:2379 \
+	--initial-advertise-peer-urls http://10.157.27.43:2380 \
+	--listen-peer-urls http://10.157.27.43:2380 \
+	--initial-cluster-token etcd-cluster \
+	--initial-cluster \
+	"etcd1=http://10.157.27.41:2380,etcd2=http://10.157.27.42:2380,etcd3=http://10.157.27.43:2380" \
+	--initial-cluster-state new

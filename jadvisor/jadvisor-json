@@ -1,0 +1,106 @@
+{
+  "id": "/test-jjjj",
+  "cmd": null,
+  "cpus": 0.1,
+  "mem": 1024,
+  "disk": 0,
+  "instances": 1,
+  "constraints": [
+    [
+      "vcluster",
+      "LIKE",
+      "test"
+    ],
+    [
+      "hostname",
+      "UNIQUE"
+    ],
+    [
+      "type",
+      "UNLIKE",
+      "swarm"
+    ]
+  ],
+  "container": {
+    "type": "DOCKER",
+    "volumes": [
+      {
+        "containerPath": "/var/run/docker.sock",
+        "hostPath": "/var/run/docker.sock",
+        "mode": "RW"
+      }
+    ],
+    "docker": {
+      "image": "demoregistry.dataman-inc.com/pufa/jmx-exporter:0.1",
+      "network": "HOST",
+      "privileged": false,
+      "parameters": [
+        {
+          "key": "label",
+          "value": "APP_ID=test-jjjj"
+        },
+        {
+          "key": "label",
+          "value": "VCLUSTER=test"
+        },
+        {
+          "key": "user",
+          "value": "root"
+        }
+      ],
+      "forcePullImage": false
+    }
+  },
+  "env": {
+    "MESOS_URL": "http://192.168.45.149:5050/",
+    "JD_PORT": "9081"
+  },
+  "labels": {
+    "GROUP_ID": "1",
+    "USER_ID": "1",
+    "VCLUSTER": "test"
+  },
+  "portDefinitions": [
+    {
+      "port": 10000,
+      "protocol": "tcp",
+      "labels": {}
+    }
+  ]
+}
+
+
+
+
+
+{
+  "id": "/tomcat",
+  "cmd": "host=`hostname -i`\nexport  JAVA_OPTS=\"-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.port=8061 -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=$host\"\n/usr/local/tomcat/bin/catalina.sh run",
+  "cpus": 0.1,
+  "mem": 256,
+  "disk": 0,
+  "instances": 2,
+  "container": {
+    "type": "DOCKER",
+    "volumes": [],
+    "docker": {
+      "image": "tomcat:7-jre8-alpine",
+      "network": "BRIDGE",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 0,
+          "servicePort": 10001,
+          "protocol": "tcp",
+          "labels": {}
+        }
+      ],
+      "privileged": false,
+      "parameters": [],
+      "forcePullImage": false
+    }
+  },
+  "env": {
+    "APP_TYPE": "tomcat"
+  }
+}

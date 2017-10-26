@@ -1,0 +1,46 @@
+1、将已经准备好的数据库镜像和jborg镜像copy到docker宿主机；
+2、如果是跳板机集群方式：先将跳板机上的镜像tar文件导入到指定的集群主机上：scp /home/hyzhang/jborg/images/jborg.tgz root@10.10.169.34:/home/hyzhang
+3、数据库初始化
+	将数据库镜像tar导入到宿主机镜像库：docker load  < image名称
+	运行容器：docker run -d -p 3306:3306 --name jborg-mysql -e MYSQL_ROOT_PASSWORD=jRa4DatfNM7g2 -d  offlineregistry.dataman-inc.com:5000/library/centos7-docker-mysql:v5.6.26.2016090604
+	进入容器：docker exec -it jborg-mysql bash
+	登录到数据库：mysql -uroot -p
+	创建jborg数据库：create database jborg;
+	数据库脚本导入：docker exec -i db mysql -u root -pjRa4DatfNM7g2 jborg < /home/hyzhang/mysql/jborg_init.sql
+4、jborg容器安装
+	将jborg的jborg.tgz解压tar xzvf jborg.tgz,导入到宿主机镜像库：docker load  < /home/dataman-jborg.tar
+		运行容器：docker run -d -p 18090:8080 --name dataman-jborg 
+					-e "MYSQL_HOST=172.30.131.25" 
+					-e "MYSQL_PORT=3306" 
+					-e "MYSQL_USERNAME=root" 
+					-e "MYSQL_PASSWORD=jRa4DatfNM7g2" 
+					-e "CONSUL_HOST=172.30.131.25" 
+					-e "CONSUL_PORT=8500" 
+					-e "CONSUL_MARATHON_SERVICE_NAME_PREFIX=marathon-" 
+					-e "CONSUL_MARATHON_SERVICE_DEFAULT_NAME=172.30.131.25" 
+					-e "MARATHON_ENDPOINT=http://172.30.131.25:6080" 
+					-e "MARATHON_USERNAME=admin" 
+					-e "MARATHON_PASSWORD=pfdcos"
+					-e "MARATHON_PORT=6080"
+					-e "MESOS_SLAVE_PORT=6051"
+					-e "MESOS_ENDPOINT=http://172.30.131.25:6050"
+					-e "MESOS_SLAVE_VOLUME_PATH=/data/mesos-new"
+					-e "MESOS_SLAVE_CONTAINERNAME=dcos-mesos-slave-new"
+					-e "MESOS_SLAVE_CONFIG_PATH=/data/mesos-new/meta/slaves/"
+					-e "MESOS_SLAVE_IMAGE_NAME=172.30.131.21:5000/library/centos7-mesos-1.2.1-slave"
+					-e "IMAGE_NAME_USED_BY_DEL_FILE=172.30.131.21:5000/library/alpine3.4-base"
+					-e "DOCKER_HOST=172.30.131.25"
+					-e "DOCKER_PORT=12375"
+					-e "DOCKER_REGISTRY_USERNAME=dmos"
+					-e "DOCKER_REGISTRY_PASSWORD=xbXs8kxHaXXw"
+					-e "DOCKER_REGISTRY_EMAIL=dockeruser@github.com"
+					-e "REDIS_HOST=172.29.42.109"
+					-e "REDIS_PORT=16379"
+					-e "SPDB_CMDB_FLAG=1"
+					-e "LDAP_FLAG=0"
+					-e "FILE_UPLOAD_CATALOGS_STACK=/data/apps/"
+					-e "SPDBCMDB_CRON=0 0/30 * * * ?"
+				dataman-jborg:latest
+	查看容器运行日志：docker logs --tail 200 -f dataman-jborg
+	
+	
