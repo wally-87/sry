@@ -1,0 +1,27 @@
+
+
+
+
+一、克隆出一台kvm
+virt-clone -o centos7 -n centos-38 -f /data/centos-38.qcow2
+
+二、创建kvm存储卷
+virsh vol-create-as data centos-38-sdb.qcow2 50G --format qcow2
+virsh vol-create-as data centos-38-sdc.qcow2 200G --format qcow2
+
+三、给kvm添加磁盘
+virsh edit centos-38
+
+四、登录kvm服务器，格式化磁盘（xfs格式）
+mkfs.xfs -f /dev/vdb
+mkfs.xfs -f /dev/vdc
+
+五、挂载磁盘
+mount /dev/vdb /docker
+mount /dev/vdc /data
+
+/dev/vdb              50G   33M   50G   1% /docker
+/dev/vdc             200G   33M  200G   1% /data
+
+五、添加开机启动项
+vi /etc/fstab
